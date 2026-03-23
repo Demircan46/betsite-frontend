@@ -76,13 +76,13 @@ input,textarea{font-family:var(--font)}
 .hidden{display:none!important}
 
 /* HERO */
-.hero{max-width:1440px;margin:0 auto;padding:48px 20px 32px;display:grid;grid-template-columns:1fr 320px;gap:40px;align-items:center}
+.hero{max-width:1440px;margin:0 auto;padding:56px 20px 40px;display:grid;grid-template-columns:1fr;gap:40px;align-items:center;text-align:center}
 .hero-tag{display:inline-flex;align-items:center;gap:8px;padding:5px 12px;background:var(--accentl);border:1px solid rgba(240,165,0,.2);border-radius:20px;font-size:11px;font-weight:600;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px}
 .hero-tag-dot{width:5px;height:5px;background:var(--accent);border-radius:50%;animation:pulse 1.5s infinite}
 .hero h1{font-family:var(--fontd);font-size:48px;font-weight:700;line-height:1.05;letter-spacing:-1.5px;margin-bottom:14px}
 .hero h1 em{font-style:normal;color:var(--accent)}
-.hero p{font-size:16px;color:var(--txt2);line-height:1.6;margin-bottom:28px;max-width:480px}
-.hero-btns{display:flex;gap:10px;align-items:center}
+.hero p{font-size:16px;color:var(--txt2);line-height:1.6;margin-bottom:28px;max-width:600px;margin-left:auto;margin-right:auto}
+.hero-btns{display:flex;gap:10px;align-items:center;justify-content:center}
 .btn-hero-primary{padding:13px 28px;background:var(--accent);color:#000;border:none;border-radius:var(--r10);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;font-family:var(--fontd)}
 .btn-hero-primary:hover{background:var(--accent2);transform:translateY(-1px)}
 .btn-hero-secondary{padding:13px 24px;background:transparent;color:var(--txt2);border:1px solid var(--line3);border-radius:var(--r10);font-size:15px;font-weight:500;cursor:pointer;transition:all .15s}
@@ -298,4 +298,27 @@ input,textarea{font-family:var(--font)}
   .betslip-panel{width:100%}
   .mh-team-name{font-size:20px}
   .nav-sports{display:none}
+}
+.hero-features{display:flex;flex-direction:row;flex-wrap:wrap;gap:10px 24px;margin-top:28px;justify-content:center}
+.hf-item{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--txt2)}
+.hf-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.hero-right{display:flex;flex-direction:column;gap:14px}
+.hero-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.hs-card{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r12);padding:16px;text-align:center}
+.hero-promo{background:var(--bg2);border:1px solid var(--line2);border-radius:var(--r12);padding:20px}
+.promo-label{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;font-weight:600}
+.promo-leagues{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.promo-league{background:var(--bg3);border:1px solid var(--line);border-radius:var(--r8);padding:10px 14px;font-size:13px;font-weight:500;color:var(--txt2);text-align:center;transition:all .15s}
+.promo-league:hover{border-color:var(--accent);color:var(--accent)}
+
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr!important}
+  .hero-right{display:none}
+  .hero h1{font-size:32px!important}
+  .matches-grid{grid-template-columns:1fr!important}
+  .wallet-grid{grid-template-columns:1fr!important}
+  .betslip-panel{width:100%!important}
+  .mh-team-name{font-size:18px!important}
+  .nav-sports{display:none!important}
+  .hero-features{display:none}
 }

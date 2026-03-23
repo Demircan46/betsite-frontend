@@ -1,4 +1,4 @@
-const API = 'http://localhost:3000/api';
+const API = 'https://betsite-backend.onrender.com/api';
 let TOKEN = localStorage.getItem('bs_token');
 let USER = JSON.parse(localStorage.getItem('bs_user') || 'null');
 let betslip = [];

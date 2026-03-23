@@ -8,12 +8,10 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<!-- NAV -->
 <nav class="nav">
   <div class="nav-inner">
     <div class="nav-left">
-      <div class="logo">BET<span>SITE</span></div>
+      <div class="logo" onclick="showPage('home')">BET<span>SITE</span></div>
       <div class="nav-sports" id="nav-sports">
         <button class="sport-btn active" data-sport="">All</button>
         <button class="sport-btn" data-sport="soccer_turkey_super_lig">Süper Lig</button>
@@ -27,7 +25,7 @@
       <button class="btn-primary" onclick="showPage('register')">Join Now</button>
     </div>
     <div class="nav-right hidden" id="nav-auth">
-      <div class="balance-badge" id="nav-balance">
+      <div class="balance-badge">
         <span class="balance-label">Balance</span>
         <span class="balance-amount" id="balance-amount">0.00 USDT</span>
       </div>
@@ -35,17 +33,16 @@
       <div class="nav-user" onclick="toggleUserMenu()">
         <span id="nav-username">—</span>
         <span class="chevron">▾</span>
-      </div>
-      <div class="user-menu hidden" id="user-menu">
-        <button onclick="showPage('mybets')">My Bets</button>
-        <button onclick="showPage('wallet')">Wallet</button>
-        <button onclick="doLogout()">Logout</button>
+        <div class="user-menu hidden" id="user-menu">
+          <button onclick="showPage('mybets')">My Bets</button>
+          <button onclick="showPage('wallet')">Wallet</button>
+          <button onclick="doLogout()">Logout</button>
+        </div>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- BETSLIP SIDEBAR -->
 <div class="betslip-overlay hidden" id="betslip-overlay" onclick="toggleBetslip()"></div>
 <div class="betslip" id="betslip">
   <div class="betslip-header">
@@ -62,9 +59,7 @@
   <span>Slip</span><span class="fab-count" id="fab-count">0</span>
 </button>
 
-<!-- PAGES -->
 <div id="pages">
-
   <!-- HOME -->
   <div class="page active" id="page-home">
     <div class="hero">
@@ -75,7 +70,7 @@
         <button class="btn-hero" onclick="showPage('register')">Start Betting</button>
       </div>
       <div class="hero-stats">
-        <div class="hero-stat"><div class="hs-val" id="hs-matches">—</div><div class="hs-lbl">Live Matches</div></div>
+        <div class="hero-stat"><div class="hs-val" id="hs-matches">—</div><div class="hs-lbl">Matches</div></div>
         <div class="hero-stat"><div class="hs-val">USDT</div><div class="hs-lbl">Currency</div></div>
         <div class="hero-stat"><div class="hs-val">24/7</div><div class="hs-lbl">Support</div></div>
       </div>
@@ -83,11 +78,20 @@
     <div class="section">
       <div class="section-header">
         <h2>Upcoming Matches</h2>
-        <button class="btn-text" onclick="loadMatches()">Refresh ↻</button>
+        <button class="btn-text" onclick="loadMatches()">↻ Refresh</button>
       </div>
       <div class="matches-grid" id="matches-grid">
         <div class="loading-state">Loading matches...</div>
       </div>
+    </div>
+  </div>
+
+  <!-- MATCH DETAIL PAGE -->
+  <div class="page" id="page-match">
+    <div class="match-page-wrap">
+      <button class="back-btn" onclick="showPage('home')">← Back to Matches</button>
+      <div class="match-page-header" id="match-page-header"></div>
+      <div class="markets-wrap" id="markets-wrap"></div>
     </div>
   </div>
 
@@ -177,7 +181,6 @@
       <div class="bets-list" id="bets-list"><div class="loading-state">Loading...</div></div>
     </div>
   </div>
-
 </div>
 
 <div class="toast-wrap" id="toast-wrap"></div>

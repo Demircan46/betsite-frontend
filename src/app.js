@@ -32,20 +32,20 @@ async function api(path, opts = {}) {
 function initAuth() {
   document.getElementById('nav-right').classList.add('hidden');
   document.getElementById('nav-auth').classList.remove('hidden');
-  document.getElementById('nav-username').textContent = USER.username;
+  const av = document.getElementById('nav-initials'); if(av) av.textContent = USER.username.substring(0,2).toUpperCase();
   updateBalanceDisplay(USER.balance);
 }
 
 function updateBalanceDisplay(balance) {
   const b = parseFloat(balance || 0).toFixed(2);
   document.getElementById('balance-amount').textContent = b + ' USDT';
-  document.getElementById('wallet-balance-amount').textContent = b + ' USDT';
+  const wb = document.getElementById('wallet-balance'); if(wb) wb.textContent = b + ' USDT';
 }
 
 async function doLogin() {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
-  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-err').textContent = '';
   try {
     const data = await api('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
     TOKEN = data.token; USER = data.user;
@@ -53,14 +53,14 @@ async function doLogin() {
     localStorage.setItem('bs_user', JSON.stringify(USER));
     initAuth(); showPage('home');
     toast('Welcome back, ' + USER.username + '!', 'success');
-  } catch (err) { document.getElementById('login-error').textContent = err.message; }
+  } catch (err) { document.getElementById('login-err').textContent = err.message; }
 }
 
 async function doRegister() {
   const username = document.getElementById('reg-username').value;
   const email = document.getElementById('reg-email').value;
   const password = document.getElementById('reg-password').value;
-  document.getElementById('reg-error').textContent = '';
+  document.getElementById('reg-err').textContent = '';
   try {
     const data = await api('/auth/register', { method: 'POST', body: JSON.stringify({ username, email, password }) });
     TOKEN = data.token; USER = data.user;
@@ -68,7 +68,7 @@ async function doRegister() {
     localStorage.setItem('bs_user', JSON.stringify(USER));
     initAuth(); showPage('home');
     toast('Account created! Welcome, ' + USER.username, 'success');
-  } catch (err) { document.getElementById('reg-error').textContent = err.message; }
+  } catch (err) { document.getElementById('reg-err').textContent = err.message; }
 }
 
 function doLogout() {
@@ -79,15 +79,15 @@ function doLogout() {
   betslip = []; renderBetslip(); showPage('home'); toast('Logged out', 'info');
 }
 
-function toggleUserMenu() { document.getElementById('user-menu').classList.toggle('hidden'); }
+function toggleUserMenu() { document.getElementById('user-dropdown').classList.toggle('hidden'); }
 document.addEventListener('click', e => {
-  if (!e.target.closest('.nav-user')) document.getElementById('user-menu')?.classList.add('hidden');
+  if (!e.target.closest('.nav-avatar')) document.getElementById('user-dropdown')?.classList.add('hidden');
 });
 
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  document.getElementById('user-menu')?.classList.add('hidden');
+  document.getElementById('user-dropdown')?.classList.add('hidden');
   if (name === 'wallet') loadWallet();
   if (name === 'mybets') loadMyBets();
   window.scrollTo(0, 0);
@@ -100,7 +100,7 @@ async function loadMatches() {
     const url = '/matches' + (currentSport ? '?sport=' + currentSport : '');
     const data = await api(url);
     const matches = data.matches || [];
-    document.getElementById('hs-matches').textContent = matches.length;
+    document.getElementById('hs-matches').textContent = matches.length; const mc = document.getElementById('match-count'); if(mc) mc.textContent = matches.length;
     if (!matches.length) { grid.innerHTML = '<div class="loading-state">No matches available.</div>'; return; }
     grid.innerHTML = matches.map(m => renderMatchCard(m)).join('');
   } catch (err) { grid.innerHTML = '<div class="loading-state">Failed to load matches.</div>'; }
@@ -116,16 +116,19 @@ function renderMatchCard(m) {
   const lg = leagueName(m.sport_key);
   const id = m.id;
   return '<div class="match-card" onclick="openMatch(\'' + id + '\')">' +
-    '<div class="mc-header"><span class="mc-league">' + lg + '</span><span class="mc-time">' + time + '</span></div>' +
-    '<div class="mc-teams"><div class="mc-team"><div class="mc-team-name">' + m.home_team + '</div></div><div class="mc-vs">VS</div><div class="mc-team"><div class="mc-team-name">' + m.away_team + '</div></div></div>' +
-    '<div class="mc-odds" onclick="event.stopPropagation()">' +
-    '<button class="odds-btn" id="ob-' + id + '-home" onclick="quickBet(event,\'' + id + '\',\'home\',\'' + m.home_team + '\',\'' + m.away_team + '\',' + m.odds_home + ',\'' + lg + '\')">' +
-    '<span class="odds-label">1 Home</span><span class="odds-value">' + (m.odds_home||'—') + '</span></button>' +
-    '<button class="odds-btn" id="ob-' + id + '-draw" onclick="quickBet(event,\'' + id + '\',\'draw\',\'' + m.home_team + '\',\'' + m.away_team + '\',' + m.odds_draw + ',\'' + lg + '\')">' +
-    '<span class="odds-label">X Draw</span><span class="odds-value">' + (m.odds_draw||'—') + '</span></button>' +
-    '<button class="odds-btn" id="ob-' + id + '-away" onclick="quickBet(event,\'' + id + '\',\'away\',\'' + m.home_team + '\',\'' + m.away_team + '\',' + m.odds_away + ',\'' + lg + '\')">' +
-    '<span class="odds-label">2 Away</span><span class="odds-value">' + (m.odds_away||'—') + '</span></button></div>' +
-    '<div class="mc-footer"><span class="mc-more">+ More markets</span></div></div>';
+    '<div class="mc-top"><span class="mc-league"><span class="mc-league-dot"></span>' + lg + '</span><span class="mc-time">' + time + '</span></div>' +
+    '<div class="mc-body">' +
+    '<div class="mc-teams-row"><div class="mc-team-info"><div class="mc-team-name">' + m.home_team + '</div></div>' +
+    '<div class="mc-score-placeholder">VS</div>' +
+    '<div class="mc-team-info away"><div class="mc-team-name">' + m.away_team + '</div></div></div>' +
+    '<div class="mc-odds-row" onclick="event.stopPropagation()">' +
+    '<button class="mc-odds-btn" id="ob-' + id + '-home" onclick="quickBet(event,\'' + id + '\',\'home\',\'' + m.home_team + '\',\'' + m.away_team + '\',' + m.odds_home + ',\'' + lg + '\')">' +
+    '<span class="mc-odds-label">1 Home</span><span class="mc-odds-val">' + (m.odds_home||'—') + '</span></button>' +
+    '<button class="mc-odds-btn" id="ob-' + id + '-draw" onclick="quickBet(event,\'' + id + '\',\'draw\',\'' + m.home_team + '\',\'' + m.away_team + '\',' + m.odds_draw + ',\'' + lg + '\')">' +
+    '<span class="mc-odds-label">X Draw</span><span class="mc-odds-val">' + (m.odds_draw||'—') + '</span></button>' +
+    '<button class="mc-odds-btn" id="ob-' + id + '-away" onclick="quickBet(event,\'' + id + '\',\'away\',\'' + m.home_team + '\',\'' + m.away_team + '\',' + m.odds_away + ',\'' + lg + '\')">' +
+    '<span class="mc-odds-label">2 Away</span><span class="mc-odds-val">' + (m.odds_away||'—') + '</span></button></div></div>' +
+    '<div class="mc-footer"><span class="mc-more">+ <span>' + 8 + '</span> more markets</span></div></div>';
 }
 
 function quickBet(event, matchId, selection, home, away, odds, league) {
@@ -139,15 +142,19 @@ async function openMatch(matchId) {
     currentMatch = m;
     const lg = leagueName(m.sport_key);
     const time = new Date(m.commence_time).toLocaleString('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
-    document.getElementById('match-page-header').innerHTML =
-      '<div class="mph-league">' + lg + '</div>' +
-      '<div class="mph-teams"><div class="mph-team"><div class="mph-team-name">' + m.home_team + '</div></div>' +
-      '<div class="mph-vs">VS</div>' +
-      '<div class="mph-team away"><div class="mph-team-name">' + m.away_team + '</div></div></div>' +
-      '<div class="mph-info"><span>⏰ ' + time + '</span><span>🏆 ' + lg + '</span></div>';
-    document.getElementById('markets-wrap').innerHTML = generateMarkets(m, lg);
+    document.getElementById('match-hero').innerHTML =
+      '<div class="match-hero">' +
+      '<div class="mh-league">' + lg + '</div>' +
+      '<div class="mh-teams">' +
+      '<div class="mh-team"><div class="mh-team-name">' + m.home_team + '</div></div>' +
+      '<div class="mh-vs">VS</div>' +
+      '<div class="mh-team away"><div class="mh-team-name">' + m.away_team + '</div></div>' +
+      '</div>' +
+      '<div class="mh-meta"><span class="mh-meta-item">⏰ ' + time + '</span><span class="mh-meta-item">🏆 ' + lg + '</span></div>' +
+      '</div>';
+    document.getElementById('markets-grid').innerHTML = generateMarkets(m, lg);
     showPage('match');
-  } catch(err) { toast('Failed to load match','error'); }
+  } catch(err) { toast('Failed to load match: ' + err.message,'error'); }
 }
 
 function rand(min, max) { return (min + Math.random()*(max-min)).toFixed(2); }
@@ -197,11 +204,12 @@ function generateMarkets(m, lg) {
   ];
   return markets.map(mk => {
     const btns = mk.items.map(item =>
-      '<button class="market-btn" id="mb-'+item.key+'" onclick="selectMarket(this)" data-key="'+item.key+'" data-label="'+item.label+'" data-match="'+h+' vs '+a+'" data-odds="'+item.odds+'" data-league="'+lg+'">' +
-      '<span class="mb-label">'+item.label+'</span><span class="mb-odds">'+item.odds+'</span></button>'
+      '<button class="mkt-btn" id="mb-'+item.key+'" onclick="selectMarket(this)" data-key="'+item.key+'" data-label="'+item.label+'" data-match="'+h+' vs '+a+'" data-odds="'+item.odds+'" data-league="'+lg+'">' +
+      '<span class="mkt-label">'+item.label+'</span><span class="mkt-odds">'+item.odds+'</span></button>'
     ).join('');
-    return '<div class="market-card"><div class="market-header"><span class="market-title">'+mk.title+'</span><span class="market-count">'+mk.items.length+' selections</span></div>' +
-      '<div class="market-body"><div class="market-grid '+mk.cols+'">'+btns+'</div></div></div>';
+    const colClass = mk.cols === 'cols2' ? 'c2' : mk.cols === 'cols4' ? 'c4' : 'c3';
+    return '<div class="market-card"><div class="market-title-bar"><span class="market-name">'+mk.title+'</span><span class="market-sel-count">'+mk.items.length+' selections</span></div>' +
+      '<div class="market-body"><div class="mkt-grid '+colClass+'">'+btns+'</div></div></div>';
   }).join('');
 }
 
@@ -257,34 +265,34 @@ function clearMainBtns(matchId) {
 
 function renderBetslip() {
   const count = betslip.length;
-  document.getElementById('betslip-count').textContent = count;
-  document.getElementById('fab-count').textContent = count;
-  const itemsEl = document.getElementById('betslip-items');
-  const footerEl = document.getElementById('betslip-footer');
+  document.getElementById('bs-count').textContent = count;
+  document.getElementById('fab-badge').textContent = count;
+  const itemsEl = document.getElementById('bs-items');
+  const footerEl = document.getElementById('bs-footer');
   if (!count) {
-    itemsEl.innerHTML = '<div class="betslip-empty">No selections yet.<br>Click on odds to add.</div>';
+    itemsEl.innerHTML = '<div class="bs-empty"><div class="icon">🎯</div><div>No selections yet</div><div style="font-size:12px;margin-top:4px">Click on odds to add</div></div>';
     footerEl.innerHTML = ''; return;
   }
   itemsEl.innerHTML = betslip.map((b,i) =>
-    '<div class="slip-item"><button class="slip-remove" onclick="removeFromSlip('+i+')">×</button>' +
+    '<div class="slip-card"><button class="slip-remove" onclick="removeFromSlip('+i+')">✕</button>' +
     '<div class="slip-match">'+(b.match||b.home+' vs '+b.away)+'</div>' +
-    '<div class="slip-selection">'+(b.label||selLabel(b.selection,b.home,b.away))+'</div>' +
+    '<div class="slip-sel">'+(b.label||selLabel(b.selection,b.home,b.away))+'</div>' +
     '<div class="slip-odds">'+b.odds+'</div></div>'
   ).join('');
   const totalOdds = betslip.reduce((acc,b) => acc*b.odds, 1);
   footerEl.innerHTML =
-    '<div class="stake-row"><label>Stake</label>' +
+    '<div class="stake-wrap"><label>Stake</label>' +
     '<input class="stake-input" type="number" id="stake-input" placeholder="0.00" min="1" step="0.01" oninput="updatePotential()">' +
-    '<span style="font-size:13px;color:var(--muted)">USDT</span></div>' +
-    '<div class="potential-win"><span>Odds: <strong style="color:var(--txt)">'+totalOdds.toFixed(2)+'</strong></span><strong id="potential-win">0.00 USDT</strong></div>' +
-    '<button class="btn-place" onclick="placeBet()">Place Bet</button>';
+    '<span class="stake-currency">USDT</span></div>' +
+    '<div class="win-row"><span class="lbl">Total Odds: <strong>'+totalOdds.toFixed(2)+'</strong></span><span class="val" id="potential-win">0.00 USDT</span></div>' +
+    '<button class="btn-place" onclick="placeBet()">Place Bet →</button>';
 }
 
 function updatePotential() {
   const stake = parseFloat(document.getElementById('stake-input')?.value || 0);
   const totalOdds = betslip.reduce((acc,b) => acc*b.odds, 1);
   const el = document.getElementById('potential-win');
-  if (el) el.textContent = (stake*totalOdds).toFixed(2)+' USDT';
+  const potEl = document.getElementById('potential-win'); if (potEl) potEl.textContent = (stake*totalOdds).toFixed(2)+' USDT';
 }
 
 function removeFromSlip(i) {
@@ -295,11 +303,11 @@ function removeFromSlip(i) {
 }
 
 function toggleBetslip() {
-  document.getElementById('betslip').classList.toggle('open');
+  document.getElementById('betslip-panel').classList.toggle('open');
   document.getElementById('betslip-overlay').classList.toggle('hidden');
 }
 function openBetslip() {
-  document.getElementById('betslip').classList.add('open');
+  document.getElementById('betslip-panel').classList.add('open');
   document.getElementById('betslip-overlay').classList.remove('hidden');
 }
 
@@ -330,7 +338,7 @@ async function loadWallet() {
   if (!TOKEN) { showPage('login'); return; }
   try {
     const data = await api('/user/wallet');
-    document.getElementById('deposit-address').textContent = data.depositAddress || 'Generating...';
+    document.getElementById('deposit-addr').textContent = data.depositAddress || 'Generating...';
     updateBalanceDisplay(data.balance);
     USER.balance = data.balance;
     localStorage.setItem('bs_user',JSON.stringify(USER));
@@ -344,38 +352,38 @@ async function loadTransactions() {
     const rows = await api('/user/transactions');
     if (!rows.length) { el.innerHTML='<div class="loading-state">No transactions yet.</div>'; return; }
     el.innerHTML = rows.map(r =>
-      '<div class="tx-item"><div><div class="tx-type">'+txLabel(r.type)+'</div><div class="tx-date">'+fmtDate(r.created_at)+'</div></div>' +
-      '<div class="tx-amount '+(parseFloat(r.amount)>=0?'pos':'neg')+'">'+(parseFloat(r.amount)>=0?'+':'')+parseFloat(r.amount).toFixed(2)+' USDT</div></div>'
+      '<div class="tx-row"><div class="tx-row-left"><div class="tx-type-label">'+txLabel(r.type)+'</div><div class="tx-date">'+fmtDate(r.created_at)+'</div></div>' +
+      '<div class="tx-amount-val '+(parseFloat(r.amount)>=0?'pos':'neg')+'">'+(parseFloat(r.amount)>=0?'+':'')+parseFloat(r.amount).toFixed(2)+' USDT</div></div>'
     ).join('');
   } catch(err) { el.innerHTML='<div class="loading-state">Failed.</div>'; }
 }
 
 function copyAddress() {
-  const addr = document.getElementById('deposit-address').textContent;
+  const addr = document.getElementById('deposit-addr').textContent;
   navigator.clipboard.writeText(addr).then(() => toast('Address copied!','success'));
 }
 
 async function notifyDeposit() {
-  const txHash = document.getElementById('tx-hash-input').value.trim();
-  const amount = document.getElementById('tx-amount-input').value;
+  const txHash = document.getElementById('tx-hash').value.trim();
+  const amount = document.getElementById('tx-amount').value;
   if (!txHash) { toast('Please enter TX hash','error'); return; }
   try {
     await api('/user/deposit/notify',{method:'POST',body:JSON.stringify({txHash,amount:parseFloat(amount)})});
     toast('Deposit notified! Awaiting admin approval.','success');
-    document.getElementById('tx-hash-input').value='';
-    document.getElementById('tx-amount-input').value='';
+    document.getElementById('tx-hash').value='';
+    document.getElementById('tx-amount').value='';
   } catch(err) { toast(err.message,'error'); }
 }
 
 async function doWithdraw() {
-  const toAddress = document.getElementById('withdraw-address').value.trim();
-  const amount = document.getElementById('withdraw-amount').value;
+  const toAddress = document.getElementById('withdraw-addr').value.trim();
+  const amount = document.getElementById('withdraw-amt').value;
   if (!toAddress||!amount) { toast('Please fill all fields','error'); return; }
   try {
     await api('/user/withdraw',{method:'POST',body:JSON.stringify({toAddress,amount:parseFloat(amount)})});
     toast('Withdrawal requested!','success');
-    document.getElementById('withdraw-address').value='';
-    document.getElementById('withdraw-amount').value='';
+    document.getElementById('withdraw-addr').value='';
+    document.getElementById('withdraw-amt').value='';
   } catch(err) { toast(err.message,'error'); }
 }
 
@@ -394,13 +402,13 @@ function renderBets(filter) {
   const filtered = filter==='all' ? allBets : allBets.filter(b => b.status===filter);
   if (!filtered.length) { el.innerHTML='<div class="loading-state">No bets found.</div>'; return; }
   el.innerHTML = filtered.map(b =>
-    '<div class="bet-card '+b.status+'">' +
-    '<div class="bc-top"><div class="bc-match">'+b.home_team+' vs '+b.away_team+'</div><span class="bc-status '+b.status+'">'+b.status+'</span></div>' +
-    '<div class="bc-bottom">' +
-    '<div class="bc-detail">Selection: <strong>'+selLabel(b.selection,b.home_team,b.away_team)+'</strong></div>' +
-    '<div class="bc-detail">Odds: <strong>'+b.odds+'</strong></div>' +
-    '<div class="bc-detail">Stake: <strong>'+parseFloat(b.stake).toFixed(2)+' USDT</strong></div>' +
-    '<div class="bc-detail">To Win: <strong style="color:var(--green)">'+parseFloat(b.potential_win).toFixed(2)+' USDT</strong></div>' +
+    '<div class="bet-row '+b.status+'">' +
+    '<div class="bet-row-top"><div class="bet-match">'+b.home_team+' vs '+b.away_team+'</div><span class="bet-badge '+b.status+'">'+b.status+'</span></div>' +
+    '<div class="bet-row-bottom">' +
+    '<div class="bet-detail">Selection: <strong>'+selLabel(b.selection,b.home_team,b.away_team)+'</strong></div>' +
+    '<div class="bet-detail">Odds: <strong>'+b.odds+'</strong></div>' +
+    '<div class="bet-detail">Stake: <strong>'+parseFloat(b.stake).toFixed(2)+' USDT</strong></div>' +
+    '<div class="bet-detail">To Win: <strong style="color:var(--green)">'+parseFloat(b.potential_win).toFixed(2)+' USDT</strong></div>' +
     '</div></div>'
   ).join('');
 }
